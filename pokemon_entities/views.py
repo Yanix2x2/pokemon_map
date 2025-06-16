@@ -1,5 +1,4 @@
 import folium
-import json
 
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
@@ -35,7 +34,7 @@ def show_all_pokemons(request):
 
     for pokemon in Pokemon.objects.all():
         pokemon_entities = PokemonEntity.objects.filter(pokemon=pokemon)
-        
+
         for pokemon_entity in pokemon_entities:
             if pokemon_entity.appeared_at < moscow_time < pokemon_entity.disappeared_at: 
                 add_pokemon(
