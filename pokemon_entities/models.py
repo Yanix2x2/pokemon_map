@@ -25,21 +25,13 @@ class Pokemon(models.Model):
         blank=True,
         verbose_name='Имя на японском'
     )
-    evolution_from = models.ForeignKey(
+    previous_evolution = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='evolutions_from',
+        related_name='next_evolutions',
         verbose_name='Эволюционировал из' 
-    )
-    evolution_to = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='evolutions_to',
-        verbose_name='Эволюционировал до'
     )
 
     def __str__(self):

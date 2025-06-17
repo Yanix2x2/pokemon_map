@@ -84,19 +84,22 @@ def show_pokemon(request, pokemon_id):
         'description': pokemon.description,
     }
 
-    if pokemon.evolution_from:
+    if pokemon.previous_evolution:
         pokemon_on_page['previous_evolution'] = {
-            'title_ru': pokemon.evolution_from.title,
-            'pokemon_id': pokemon.evolution_from.id,
-            'img_url': get_image_url(request, pokemon.evolution_from),
+            'title_ru': pokemon.previous_evolution.title,
+            'pokemon_id': pokemon.previous_evolution.id,
+            'img_url': get_image_url(request, pokemon.previous_evolution),
         }    
 
-    if pokemon.evolution_to:
-        pokemon_on_page['next_evolution'] = {
-            'title_ru': pokemon.evolution_to.title,
-            'pokemon_id': pokemon.evolution_to.id,
-            'img_url': get_image_url(request, pokemon.evolution_to)
-        }  
+    try:
+        if next_evolution := pokemon.next_evolutions.get():
+            pokemon_on_page['next_evolution'] = {
+                'title_ru': next_evolution.title,
+                'pokemon_id': next_evolution.id,
+                'img_url': get_image_url(request, next_evolution)
+            }
+    except Pokemon.DoesNotExist:
+        pass
 
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(), 
