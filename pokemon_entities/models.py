@@ -9,19 +9,16 @@ class Pokemon(models.Model):
         verbose_name='Картинка'
     )
     description = models.TextField(
-        null=True,
         blank=True,
         verbose_name='Описание'
     )
     title_en = models.CharField(
         max_length=200,
-        null=True,
         blank=True,
         verbose_name='Имя на английском'
     )
     title_jp = models.CharField(
         max_length=200,
-        null=True,
         blank=True,
         verbose_name='Имя на японском'
     )
@@ -43,7 +40,13 @@ class Pokemon(models.Model):
 
 
 class PokemonEntity(models.Model):
-    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, verbose_name='Покемон')
+    pokemon = models.ForeignKey(
+        Pokemon,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Покемон',
+        related_name='pokemon_entities'
+    )
     lat = models.FloatField(verbose_name='Широта')
     lon = models.FloatField(verbose_name='Долгота')
     appeared_at = models.DateTimeField(null=True, verbose_name='Появится в')
