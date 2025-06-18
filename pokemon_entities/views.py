@@ -31,15 +31,18 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     moscow_time = timezone.localtime(timezone.now())
+    active_pokemons = PokemonEntity.objects.filter(
+        appeared_at__lt=moscow_time,
+        disappeared_at__gt=moscow_time
+    )
 
-    for pokemon_entity in PokemonEntity.objects.all():
-        if pokemon_entity.appeared_at < moscow_time < pokemon_entity.disappeared_at: 
-            add_pokemon(
-                folium_map, 
-                pokemon_entity.lat,
-                pokemon_entity.lon,
-                get_image_url(request, pokemon_entity.pokemon)
-            )
+    for pokemon_entity in active_pokemons:
+        add_pokemon(
+            folium_map, 
+            pokemon_entity.lat,
+            pokemon_entity.lon,
+            get_image_url(request, pokemon_entity.pokemon)
+        )
 
     pokemons_on_page = []
     for pokemon in Pokemon.objects.all():
@@ -61,10 +64,14 @@ def show_pokemon(request, pokemon_id):
     except Pokemon.DoesNotExist:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
 
-    pokemon_entities = pokemon.pokemon_entities.all()
-
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon_entity in pokemon_entities:   
+    moscow_time = timezone.localtime(timezone.now())
+    active_pokemons = PokemonEntity.objects.filter(
+        appeared_at__lt=moscow_time,
+        disappeared_at__gt=moscow_time
+    )
+
+    for pokemon_entity in active_pokemons: 
         add_pokemon(
             folium_map, 
             pokemon_entity.lat,
@@ -88,15 +95,12 @@ def show_pokemon(request, pokemon_id):
             'img_url': get_image_url(request, pokemon.previous_evolution),
         }    
 
-    try:
-        if next_evolution := pokemon.next_evolutions.get():
-            pokemon_on_page['next_evolution'] = {
-                'title_ru': next_evolution.title,
-                'pokemon_id': next_evolution.id,
-                'img_url': get_image_url(request, next_evolution)
-            }
-    except Pokemon.DoesNotExist:
-        pass
+    if next_evolution := pokemon.next_evolutions.first():
+        pokemon_on_page['next_evolution'] = {
+            'title_ru': next_evolution.title,
+            'pokemon_id': next_evolution.id,
+            'img_url': get_image_url(request, next_evolution)
+        }
 
     return render(request, 'pokemon.html', context={
         'map': folium_map._repr_html_(), 
